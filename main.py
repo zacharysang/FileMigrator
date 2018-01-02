@@ -1,6 +1,10 @@
 import sys
 import os.path
-from shutil import copyfile
+from shutil import copy2
+from shutil import copytree
+
+ext_prompt = "Keep this file type -> {}? (y/n): "
+yes_str = "y"
 
 # Make sure we have the correct number of arguments
 if len(sys.argv) < 3:
@@ -15,7 +19,7 @@ dest = sys.argv[2]
 if len(orig) == 0 or not os.path.isdir(orig):
   print("Invalid input location specified")
   quit()
-if len(dest) == 0 or not os.path.isdir(dest):
+if len(dest) == 0:
   print("Invalid output location specified")
   quit()
   
@@ -26,29 +30,27 @@ if len(dest) == 0 or not os.path.isdir(dest):
 # This dictionary stores the file extension with a boolean of if it should be stored
 should_keep_filetype = dict()
 
-for currpath, dirnames, filenames in os.walk(orig):
-  # go through all files
-  for file in filenames:
-    currfile = os.path.join(currpath, file)
-    
+def ig(path, list):
+  ignore_list = []  
+  
+  for file in filter(os.path.isfile, list):
     if file.rfind(".") == -1:
-      curr_ext = ""
+      ext = ""
     else:
-      curr_ext = file[file.rfind("."):]
+      ext = file[file.rfind("."):]
 
-    # if the extension is not in unwantedFileTypes dict
+    # if the extension is not yet seen
     # then prompt and add a new entry
-    if curr_ext not in should_keep_filetype:
-      should_keep = input("Keep this file type: {}? (y/n)".format(curr_ext)).lower() != "n"
-      should_keep_filetype[curr_ext] = should_keep
-
-    # include file in mirrored location if specified
-    if should_keep_filetype[curr_ext]:
-      # Define the path dettached from origin
-      dettached_path = currpath[len(orig):]
-
-      # Check if the same directory path already exists in the destination
-      if not os.path.exists(dettached_path):
-        copytree(dest, dettached_path)
-
-    copyfile(currfile, os.path.join(dest, dettached_path))
+    if not ext in should_keep_filetype:
+      should_keep = input(ext_prompt.format(ext)).lower() == yes_str
+      should_keep_filetype[ext] = should_keep
+    
+    # if the extension should be ignored
+    # then add it to the return list
+    if not should_keep_filetype[ext]:
+      ignore_list.append(file)
+    
+  return ignore_list
+    
+    
+copytree(orig, dest, ignore=ig)
