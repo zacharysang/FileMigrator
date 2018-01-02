@@ -30,39 +30,30 @@ if len(dest) == 0:
 # This dictionary stores the file extension with a boolean of if it should be stored
 should_keep_filetype = dict()
 
-def ig(path, list):
+def ig(path, contents):  
 
   global should_keep_filetype
   ignore_list = []
-  files = [file for file in list if os.path.isfile(file)]
-  
-  for file in files:
+  files = [f for f in contents if os.path.isfile(os.path.join(path, f))]
 
-    if file.rfind(".") == -1:
+  for f in files:
+
+    if f.rfind(".") == -1:
       ext = ""
     else:
-      ext = file[file.rfind("."):]
-
-    print("file: {}".format(file))
-    print("ext: {}".format(ext))
-
+      ext = f[f.rfind("."):]
+    
     # if the extension is not yet seen
     # then prompt and add a new entry
     if ext not in should_keep_filetype:
-      print("extension {} not in dictionary".format(ext))
       should_keep = input(ext_prompt.format(ext)).lower() == yes_str
       should_keep_filetype[ext] = should_keep
-    else:
-      print("extension {} in dictionary".format(ext))
     
     # if the extension should be ignored
     # then add it to the return list
     if not should_keep_filetype[ext]:
-      ignore_list.append(file)
+      ignore_list.append(f)
   
-  for item in should_keep_filetype:
-    print(item)
-    print("----------")
   return ignore_list
     
     
