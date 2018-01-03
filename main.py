@@ -41,12 +41,12 @@ def ig(path, contents):
     if f.rfind(".") == -1:
       ext = ""
     else:
-      ext = f[f.rfind("."):]
+      ext = f[f.rfind("."):].lower()
     
     # if the extension is not yet seen
     # then prompt and add a new entry
     if ext not in should_keep_filetype:
-      should_keep = input(ext_prompt.format(ext)).lower() == yes_str
+      should_keep = input(ext_prompt.format(ext)).lower()[0] == yes_str
       should_keep_filetype[ext] = should_keep
     
     # if the extension should be ignored
